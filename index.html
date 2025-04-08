@@ -128,24 +128,25 @@
           ]
         })
       })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.responses || !data.responses[0]) {
-          resultDiv.innerText = "인식 실패: Vision API 응답 없음";
-          console.error("응답 없음", data);
-          return;
-        }
+        .then(res => res.json())
+.then(data => {
+  console.log("Vision API 전체 응답:", data); // 이 줄 추가!
 
-        const text = data.responses[0].fullTextAnnotation?.text || "";
-        const clean = text.replace(/\s/g, '');
-        console.log("인식 결과:", clean);
+  if (!data.responses || !data.responses[0]) {
+    resultDiv.innerText = "인식 실패: Vision API 응답 없음";
+    return;
+  }
 
-        if (clean.includes("눈")) {
-          resultDiv.innerText = `정답! (${clean})`;
-        } else {
-          resultDiv.innerText = `오답입니다. (${clean})`;
-        }
-      })
+  const text = data.responses[0].fullTextAnnotation?.text || "";
+  const clean = text.replace(/\s/g, '');
+  console.log("인식된 텍스트:", clean);
+
+  if (clean.includes("눈")) {
+    resultDiv.innerText = `정답! (${clean})`;
+  } else {
+    resultDiv.innerText = `오답입니다. (${clean})`;
+  }
+})
       .catch(err => {
         resultDiv.innerText = "인식 실패: " + err.message;
         console.error(err);
