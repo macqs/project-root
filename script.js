@@ -51,3 +51,63 @@ if (questionDiv) {
     }
   });
 }
+// ===== 캔버스 터치/마우스 그리기 기능 =====
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDraw);
+canvas.addEventListener('mouseout', stopDraw);
+
+canvas.addEventListener('touchstart', (e) => startDraw(e.touches[0]));
+canvas.addEventListener('touchmove', (e) => {
+  draw(e.touches[0]);
+  e.preventDefault();
+});
+canvas.addEventListener('touchend', stopDraw);
+
+function startDraw(e) {
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+}
+
+function draw(e) {
+  if (!drawing) return;
+  ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function stopDraw() {
+  drawing = false;
+}
+
+// ===== 제출 버튼 누르면 Tesseract로 인식 =====
+function submitCanvas() {
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerText = "인식 중...";
+
+  Tesseract.recognize(
+    canvas,
+    'kor',  // 한글 언어팩 사용
+    { logger: m => console.log(m) }
+  ).then(({ data: { text } }) => {
+    console.log("인식된 글자:", text);
+    const cleanText = text.trim().replace(/\s/g, '');
+    if (cleanText.includes("눈")) {
+      resultDiv.innerText = `정답! (${cleanText})`;
+    } else {
+      resultDiv.innerText = `오답입니다. (${cleanText})`;
+    }
+  }).catch(err => {
+    resultDiv.innerText = "인식 실패: " + err.message;
+  });
+}
+
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
