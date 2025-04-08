@@ -56,35 +56,53 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let drawing = false;
 
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('mouseup', stopDraw);
-canvas.addEventListener('mouseout', stopDraw);
-
-canvas.addEventListener('touchstart', (e) => startDraw(e.touches[0]));
-canvas.addEventListener('touchmove', (e) => {
-  draw(e.touches[0]);
-  e.preventDefault();
-});
-canvas.addEventListener('touchend', stopDraw);
-
-function startDraw(e) {
-  drawing = true;
-  ctx.beginPath();
-  ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+// 좌표 구하기 (정확히)
+function getPosition(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
 }
 
-function draw(e) {
+// 마우스
+canvas.addEventListener('mousedown', (e) => {
+  drawing = true;
+  const pos = getPosition(e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+});
+canvas.addEventListener('mousemove', (e) => {
   if (!drawing) return;
-  ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+  const pos = getPosition(e);
+  ctx.lineTo(pos.x, pos.y);
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 2;
   ctx.stroke();
-}
+});
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseleave', () => drawing = false);
 
-function stopDraw() {
-  drawing = false;
-}
+// 터치
+canvas.addEventListener('touchstart', (e) => {
+  drawing = true;
+  const touch = e.touches[0];
+  const pos = getPosition(touch);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+});
+canvas.addEventListener('touchmove', (e) => {
+  if (!drawing) return;
+  e.preventDefault(); // 스크롤 방지
+  const touch = e.touches[0];
+  const pos = getPosition(touch);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+});
+canvas.addEventListener('touchend', () => drawing = false);
+canvas.addEventListener('touchcancel', () => drawing = false);
 
 // ===== 제출 버튼 누르면 Tesseract로 인식 =====
 function submitCanvas() {
