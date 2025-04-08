@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>교사용 난이도 선택</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>학생의 난이도를 선택하세요</h2>
+  <button onclick="setDifficulty('high')">상</button>
+  <button onclick="setDifficulty('medium')">중</button>
+  <button onclick="setDifficulty('low')">하</button>
+  <p id="status"></p>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
