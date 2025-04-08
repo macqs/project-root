@@ -19,12 +19,14 @@
 
   <div id="result" style="margin-top:20px; font-weight:bold;"></div>
 
-  <!-- Firebase (문제 실시간 수신용) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
-  <!-- script.js + Google OCR 연결 -->
   <script>
+    // ===============================
+    // Firebase 연동 (퀴즈 문제 수신)
+    // ===============================
     const firebaseConfig = {
       apiKey: "AIzaSyD7r3ynx6_GoRQHUxnEyTW1smnRflge6W0",
       authDomain: "qr-quiz-74448.firebaseapp.com",
@@ -32,8 +34,7 @@
       projectId: "qr-quiz-74448",
       storageBucket: "qr-quiz-74448.appspot.com",
       messagingSenderId: "1061064370375",
-      appId: "1:1061064370375:web:05f3a5fdacdf78d05b36e2",
-      measurementId: "G-DESQCKLJ64"
+      appId: "1:1061064370375:web:05f3a5fdacdf78d05b36e2"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -51,7 +52,7 @@
     });
 
     // ===============================
-    // 캔버스 필기 처리
+    // 캔버스 필기 기능
     // ===============================
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -105,15 +106,15 @@
     }
 
     // ===============================
-    // 제출 → Google Vision API 요청
+    // Google Vision API로 글씨 인식
     // ===============================
     function submitCanvas() {
       const resultDiv = document.getElementById("result");
       resultDiv.innerText = "인식 중...";
 
-      const base64Image = canvas.toDataURL().split(',')[1]; // data:image/png;base64,... 에서 데이터만 추출
+      const base64Image = canvas.toDataURL().split(',')[1];
 
-      fetch("https://vision.googleapis.com/v1/images:annotate?key=AIzaSyAHcvLXmDcmQkiXx-d_uxOUEueQnFS-G8A", {
+      fetch("https://vision.googleapis.com/v1/images:annotate?key=AIzaSyCRAXWGAi-858lQxa3hN15EBHdwZdthu2M", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -122,16 +123,23 @@
           requests: [
             {
               image: { content: base64Image },
-              features: [{ type: "TEXT_DETECTION" }]
+              features: [{ type: "DOCUMENT_TEXT_DETECTION" }]
             }
           ]
         })
       })
       .then(res => res.json())
       .then(data => {
-        const text = data.responses[0]?.fullTextAnnotation?.text || "";
+        if (!data.responses || !data.responses[0]) {
+          resultDiv.innerText = "인식 실패: Vision API 응답 없음";
+          console.error("응답 없음", data);
+          return;
+        }
+
+        const text = data.responses[0].fullTextAnnotation?.text || "";
         const clean = text.replace(/\s/g, '');
         console.log("인식 결과:", clean);
+
         if (clean.includes("눈")) {
           resultDiv.innerText = `정답! (${clean})`;
         } else {
